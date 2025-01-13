@@ -8,6 +8,7 @@
 
 coroutine_t *co_a;
 coroutine_t *co_b;
+coroutine_t *co_main;
 
 void coroutine_a(void *arg) {
     int id = *(int *)arg;
@@ -16,6 +17,7 @@ void coroutine_a(void *arg) {
         coroutine_switch(co_b);
     }
     printf("Coroutine A [%d] finished\n", id);
+    coroutine_switch(co_b);
 }
 
 void coroutine_b(void *arg) {
@@ -25,18 +27,25 @@ void coroutine_b(void *arg) {
         coroutine_switch(co_a);
     }
     printf("Coroutine B [%d] finished\n", id);
+    coroutine_switch(co_main);
 }
 
 int main() {
+    co_main = coroutine_init_main();
+    if (!co_main) {
+        return 1;
+    }
+
     int id_a = 0;
     int id_b = 1;
-    co_a = coroutine_init(4096, coroutine_a, &id_a);
-    if (!co_a) return 1;
-    co_b = coroutine_init(4096, coroutine_b, &id_b);
-    if (!co_b) return 1;
 
-    coroutine_set_current(co_a);
-    coroutine_a(&id_a); // Start the execution
+    co_a = coroutine_init(4096, coroutine_a, &id_a);
+    co_b = coroutine_init(4096, coroutine_b, &id_b);
+    if (!co_a || !co_b){
+        return 1;
+    }
+
+    coroutine_switch(co_a);
 
     printf("Main finished\n");
 

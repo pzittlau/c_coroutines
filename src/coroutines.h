@@ -30,13 +30,13 @@ typedef struct coroutine_t {
 
 typedef void (*coroutine_func_t)(void *arg);
 
-static void coroutine_crash(void);
+void coroutine_crash(void);
 coroutine_t *coroutine_init(size_t stack_size, coroutine_func_t func, void *arg);
 void coroutine_deinit(coroutine_t *coroutine);
 void coroutine_switch(coroutine_t *next);
-void switch_context(coroutine_t *from, coroutine_t *to);
+void switch_context(coroutine_state_t *from, coroutine_state_t *to);
 coroutine_t *coroutine_get_current();
-void coroutine_set_current(coroutine_t* coroutine);
+coroutine_t *coroutine_init_main(void);
 
 
 #endif // !COROUTINES

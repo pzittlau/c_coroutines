@@ -1,10 +1,9 @@
-
 #include "coroutines.h"
 
 __thread coroutine_t *current_coroutine = NULL;
 
 __attribute__((naked))
-void switch_context(coroutine_t *from, coroutine_t *to) {
+void switch_context(coroutine_state_t *from, coroutine_state_t *to) {
     __asm__ volatile (
         /*
             0x00                  -->                  0xff
@@ -43,7 +42,7 @@ void switch_context(coroutine_t *from, coroutine_t *to) {
     );
 }
 
-static void coroutine_crash(void) {
+void coroutine_crash(void) {
   assert(0);  /* called only if coroutine entrypoint returns */
 }
 
@@ -87,13 +86,14 @@ void coroutine_deinit(coroutine_t *co) {
 }
 
 void coroutine_switch(coroutine_t *next) {
+    assert(current_coroutine != NULL);
     if (current_coroutine == next) {
         return;
     }
 
     coroutine_t *previous = current_coroutine;
     current_coroutine = next;
-    switch_context(previous ? previous : next, next);
+    switch_context(&previous->state, &next->state);
 }
 
 // A helper function to get the current coroutine
@@ -101,6 +101,30 @@ coroutine_t *coroutine_get_current() {
     return current_coroutine;
 }
 
-void coroutine_set_current(coroutine_t* coroutine) {
-    current_coroutine = coroutine;
+coroutine_t *coroutine_init_main(void) {
+    coroutine_t *co = malloc(sizeof(coroutine_t));
+    if (!co) {
+        perror("Failed to allocate main coroutine");
+        return NULL;
+    }
+
+    // We don't need to allocate a separate stack for the main coroutine,
+    // it's already using the main thread's stack.
+    co->stack = NULL;
+    co->stack_size = 0;
+
+    // Initialize the state. Crucially, the rsp should point to the
+    // current stack. We can get an approximate value.
+    // The rip can be a placeholder, as we won't be "starting" this coroutine.
+    memset(&co->state, 0, sizeof(coroutine_state_t));
+
+    // Get the current stack pointer (approximate)
+    uint64_t current_sp;
+    __asm__ volatile ("mov %%rsp, %0" : "=r" (current_sp));
+    co->state.rsp = current_sp;
+
+    // Set the current coroutine to this "main" coroutine
+    current_coroutine = co;
+
+    return co;
 }

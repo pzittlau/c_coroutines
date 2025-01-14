@@ -18,8 +18,6 @@ typedef struct coroutine_state_t {
     uint64_t rsp;
     uint64_t rbx;
     uint64_t rbp;
-    uint16_t fpu_cw;
-    uint32_t mxcsr;
 } coroutine_state_t;
 
 typedef struct coroutine_t {

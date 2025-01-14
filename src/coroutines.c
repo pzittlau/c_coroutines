@@ -21,8 +21,6 @@ void switch_context(coroutine_state_t *from, coroutine_state_t *to) {
         "movq    %%rcx, 0x28(%%rdi)  \n"  // rsp
         "movq    %%rbx, 0x30(%%rdi)  \n"
         "movq    %%rbp, 0x38(%%rdi)  \n"
-        "fnstcw  0x40(%%rdi)         \n"
-        "stmxcsr 0x44(%%rdi)        \n"
 
         "movq    0x0(%%rsi), %%r12   \n"
         "movq    0x8(%%rsi), %%r13   \n"
@@ -32,8 +30,6 @@ void switch_context(coroutine_state_t *from, coroutine_state_t *to) {
         "movq    0x28(%%rsi), %%rcx  \n"  // rsp
         "movq    0x30(%%rsi), %%rbx   \n"
         "movq    0x38(%%rsi), %%rbp  \n"
-        "fldcw   0x40(%%rsi)         \n"
-        "ldmxcsr 0x44(%%rsi)        \n"
         "movq    %%rcx, %%rsp       \n"
         "jmp     *%%rax             \n"
         : /* No output operands */

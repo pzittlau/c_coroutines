@@ -1,6 +1,7 @@
 #include "coroutines.h"
+#include <stdio.h>
 
-#define Iterations 500000000
+#define ITERATIONS 500000000
 
 // Global variables
 coroutine_t *co_main;
@@ -24,7 +25,7 @@ int main() {
     int i, t1, t2;
 
     start = clock();
-    for (counter = 0, i = 0; i < Iterations; i++) {
+    for (counter = 0, i = 0; i < ITERATIONS; i++) {
         function_bench();
     }
     end = clock();
@@ -36,7 +37,7 @@ int main() {
     co_bench = coroutine_init(4096, coroutine_bench, NULL);
 
     start = clock();
-    for (counter = 0, i = 0; i < Iterations; i++) {
+    for (counter = 0, i = 0; i < ITERATIONS; i++) {
         coroutine_switch(co_bench);
     }
     end = clock();
